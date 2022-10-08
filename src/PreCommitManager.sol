@@ -17,11 +17,7 @@ contract PreCommitManager is IPreCommitManager {
     uint256 public lastCommitId;
 
     event ProjectCreated(uint256 projectId, address asset, address creator);
-    event FundsRedeemedForProject(
-        uint256 projectId,
-        address creator,
-        uint256 totalAmount
-    );
+    event FundsRedeemedForProject(uint256 projectId, address creator);
     event RedeemFailed(uint256 projectId, uint256 commitId, uint256 amount);
     event RedeemSucceeded(uint256 projectId, uint256 commitId, uint256 amount);
     event CommitCreated(
@@ -34,7 +30,11 @@ contract PreCommitManager is IPreCommitManager {
     );
     event CommitWithdrawn(uint256 commitId, address commiter);
 
-    function getProject(uint256 projectId) public view returns (Project memory) {
+    function getProject(uint256 projectId)
+        public
+        view
+        returns (Project memory)
+    {
         return projects[projectId];
     }
 
@@ -59,7 +59,6 @@ contract PreCommitManager is IPreCommitManager {
             "Only project creator can pull funds for the project"
         );
 
-        uint256 totalAmount = 0;
         for (uint256 i = 0; i < commitIds.length; i++) {
             Commit memory commit_ = commits[commitIds[i]];
             Project memory project = projects[commit_.projectId];
@@ -79,7 +78,6 @@ contract PreCommitManager is IPreCommitManager {
                 commit_.amount
             );
             if (success) {
-                totalAmount += commit_.amount;
                 delete commits[commitIds[i]];
                 emit RedeemSucceeded(
                     projectId,
@@ -91,7 +89,7 @@ contract PreCommitManager is IPreCommitManager {
             }
         }
 
-        emit FundsRedeemedForProject(projectId, msg.sender, totalAmount);
+        emit FundsRedeemedForProject(projectId, msg.sender);
     }
 
     function commit(

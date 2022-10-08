@@ -36,10 +36,7 @@ contract PreCommitManager {
     event CommitCreated(uint256 commitId, uint256 projectId, address commiter, address erc20Token, uint256 amount, uint256 expiry);
     event CommitWithdrawn(uint256 commitId, address commiter);
 
-    constructor() {
-        lastProjectId = 0;
-        lastCommitId = 0;
-    }
+    constructor() {}
 
     function createProject(address projectAcceptedAsset) public {
         lastProjectId++;

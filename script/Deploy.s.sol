@@ -11,7 +11,7 @@ contract Deploy is Script {
 
         PreCommitManager preComManager = new PreCommitManager();
 
-        console.log("PreCommitManager: %s", address(preComManager));
+        console.log("PreCommitManager: ", address(preComManager));
 
         vm.stopBroadcast();
     }

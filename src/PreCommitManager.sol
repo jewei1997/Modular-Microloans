@@ -30,7 +30,9 @@ contract PreCommitManager {
     uint256 lastCommitId;
 
     event ProjectCreated(uint256 projectId, address creator);
-    event FundsPulledForProject(uint256 projectId, address creator, uint256 amount);
+    event FundsPulledForProject(uint256 projectId, address creator, uint256 totalAmount);
+    event RedeemFailed(uint256 projectId, uint256 commitId, uint256 amount);
+    event RedeemSucceeded(uint256 projectId, uint256 commitId, uint256 amount);
     event CommitCreated(uint256 commitId, uint256 projectId, address commiter, address erc20Token, uint256 amount, uint256 expiry);
     event CommitWithdrawn(uint256 commitId, address commiter);
 
@@ -46,46 +48,50 @@ contract PreCommitManager {
         emit ProjectCreated(lastProjectId, msg.sender);
     }
 
-    // function cancelProject(uint256 projectId) public {
-    //     require(projects[projectId] == msg.sender, "Only project creator can cancel the project");
-    //     preCommits[msg.sender] = 0;
+    function redeem(uint256 projectId, uint256[] memory commitIds) public {
+        require(projects[projectId].receiver == msg.sender, "Only project creator can pull funds for the project");
 
-    //     emit ProjectCancelled(projectId, msg.sender);
-    // }
+        uint256 totalAmount = 0;
+        for (uint256 i = 0; i < commitIds.length; i++) {
+            Commit memory commit_ = commits[commitIds[i]];
+            Project memory project = projects[commit_.projectId];
+            require(commit_.projectId == projectId, "Commit does not belong to the project");
+            require(project.receiver == msg.sender, "Commit does not belong to the project");
+            require(commit_.expiry > block.timestamp, "Commit expired");
 
-    // function isProjectActive(uint256 projectId) public view returns (bool) {
-    //     return projects[projectId] != address(0);
-    // }
-
-    // function pullFundsForProject(uint256 projectId) public {
-    //     require(projects[projectId] == msg.sender, "Only project creator can pull funds for the project");
-    //     uint256 totalAmount = projectRaisedFunds[projectId];
-    //     projectRaisedFunds[projectId] = 0;
+            bool success = IERC20(commit_.erc20Token).transferFrom(commit_.commiter, project.receiver, commit_.amount);
+            if (success) {
+                totalAmount += commit_.amount;
+                delete commits[commitIds[i]];
+                emit RedeemSucceeded(projectId, commit_.commitId, commit_.amount);
+            } else {
+                emit RedeemFailed(projectId, commit_.commitId, commit_.amount);
+            }
+        }
         
-    //     IERC20(commitData.erc20Token).safeTransfer(msg.sender, totalAmount);
-        
-    //     emit FundsPulledForProject(projectId, msg.sender, totalAmount);
-    // }
+        emit FundsPulledForProject(projectId, msg.sender, totalAmount);
+    }
 
-    function commit(uint256 projectId, address token, uint256 amount, uint256 deadline) public {
+    function commit(uint256 projectId, uint256 amount, uint256 deadline) public {
         require(amount > 0, "Amount must be greater than 0");
         require(deadline > block.timestamp, "Deadline must be in the future");
 
         // if token is not projectAcceptedAsset, allow approve and swap upon pulling
-        IERC20(token).safeApprove(address(this), amount);        
+        address asset = projects[projectId].asset;
+        IERC20(asset).safeApprove(address(this), amount);        
         // increment commit data
         lastCommitId++;
         Commit memory commitData = Commit({
             commitId: lastCommitId,
             projectId: projectId,
             commiter: msg.sender,
-            erc20Token: token,
+            erc20Token: asset,
             amount: amount,
             expiry: deadline
         });
         commits[lastCommitId] = commitData;
 
-        emit CommitCreated(lastCommitId, projectId, msg.sender, token, amount, deadline);
+        emit CommitCreated(lastCommitId, projectId, msg.sender, asset, amount, deadline);
     }
 
     function withdrawCommit(uint256 commitId) public {

@@ -20,12 +20,9 @@ contract Deploy is Script {
         // setup for populating the graph
 
         // deploy mock USDC
-        address initialAccount = msg.sender;
-        uint256 initialAmount = 100e18; // this mocked USDC have 18 decimals
-        usdc = new ERC20Mock("USDC Mumbai", "USDC", initialAccount, 100e18);
-
-        // allowance so precommit manager to use addresss usdc funds
-        usdc.approve(address(preComManager), initialAmount);
+        usdc = ERC20Mock(0x7D26526DedC4C3aB56B2d652AE5a75181D92bd2c);
+        // // allowance so precommit manager to use addresss usdc funds
+        // usdc.approve(address(preComManager), initialAmount);
         vm.stopBroadcast();
 
         // user 1 creates project 1

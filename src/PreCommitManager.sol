@@ -48,6 +48,7 @@ contract PreCommitManager {
     event CommitWithdrawn(uint256 commitId, address commiter);
 
     function createProject(address projectAcceptedAsset) public {
+        require(projectAcceptedAsset != address(0), "Invalid asset address");
         lastProjectId++;
         projects[lastProjectId] = Project({
             receiver: msg.sender,
@@ -105,6 +106,10 @@ contract PreCommitManager {
     ) public {
         require(amount > 0, "Amount must be greater than 0");
         require(deadline > block.timestamp, "Deadline must be in the future");
+        require(
+            projects[projectId].receiver != address(0),
+            "Project does not exist"
+        );
 
         // if token is not projectAcceptedAsset, allow approve and swap upon pulling
         address asset = projects[projectId].asset;

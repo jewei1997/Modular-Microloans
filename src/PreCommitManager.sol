@@ -29,7 +29,7 @@ contract PreCommitManager {
     uint256 lastProjectId;
     uint256 lastCommitId;
 
-    event ProjectCreated(uint256 projectId, address creator);
+    event ProjectCreated(uint256 projectId, address asset, address creator);
     event FundsRedeemedForProject(
         uint256 projectId,
         address creator,
@@ -54,7 +54,7 @@ contract PreCommitManager {
             asset: projectAcceptedAsset
         });
 
-        emit ProjectCreated(lastProjectId, msg.sender);
+        emit ProjectCreated(lastProjectId, projectAcceptedAsset, msg.sender);
     }
 
     function redeem(uint256 projectId, uint256[] memory commitIds) public {

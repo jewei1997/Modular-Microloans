@@ -9,7 +9,9 @@ Hackathon project for [ETH Bogota 2022](https://ethglobal.com/showcase/commit-mx
 
 ## Polygon
 
-We are targeting the $4k prize pool for deploying at least one smart contract on Polygon’s testnet.
+We want our project to have a tangible impact and view it as community infrastructure/a public good. We believe that commits could be a new funding model in communities such as LATAM and the Global South, where high-trust investments could reduce uncertainty in funding underserved projects. As more of these projects get funded, underserved communities will begin to flourish, creating a positive feedback loop for more local projects to get funded and create more inclusion and regenerative opportunities.
+
+We are targeting the $4k prize pool for deploying at least one smart contract on Polygon’s testnet  as well as the $4k prize for best local LATAM public goods.
 
 [Polygonscan link of deployed contract](https://mumbai.polygonscan.com/address/0x8b76563670F37295d8756a4404D69d5BBa7c5dC8)
 

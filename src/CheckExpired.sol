@@ -9,6 +9,8 @@ import "./IPreCommitManager.sol";
 contract CheckExpired is AutomationCompatibleInterface, Ownable {
     IPreCommitManager public preCommitManager;
 
+    event CommitExpired(uint256 commitId);
+
     constructor(IPreCommitManager preCommitManager_) {
         preCommitManager = preCommitManager_;
     }
@@ -40,6 +42,7 @@ contract CheckExpired is AutomationCompatibleInterface, Ownable {
         ) {
             uint256 expiry = preCommitManager.getCommit(commitId).expiry;
             if (expiry > 0 && expiry < block.timestamp) {
+                emit CommitExpired(commitId);
                 preCommitManager.withdrawCommit(commitId);
             }
         }

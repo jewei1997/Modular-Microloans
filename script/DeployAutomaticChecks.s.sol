@@ -19,8 +19,8 @@ contract DeployAutomaticChecks is Script {
         preCommitManager = PreCommitManager(
             0x8b76563670F37295d8756a4404D69d5BBa7c5dC8
         );
-        checkExpiring = new CheckExpiring(preCommitManager, 1200, 3600);
-        console.log("CheckExpiring: ", address(checkExpiring));
+        //checkExpiring = new CheckExpiring(preCommitManager, 1200, 3600);
+        //console.log("CheckExpiring: ", address(checkExpiring));
         checkExpired = new CheckExpired(preCommitManager);
         console.log("CheckExpired: ", address(checkExpired));
         vm.stopBroadcast();

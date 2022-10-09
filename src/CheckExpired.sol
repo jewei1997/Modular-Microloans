@@ -2,11 +2,12 @@
 
 pragma solidity 0.8.15;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "./IPreCommitManager.sol";
 
-contract CheckExpired is AutomationCompatibleInterface {
-    IPreCommitManager public immutable preCommitManager;
+contract CheckExpired is AutomationCompatibleInterface, Ownable {
+    IPreCommitManager public preCommitManager;
 
     constructor(IPreCommitManager preCommitManager_) {
         preCommitManager = preCommitManager_;
@@ -42,5 +43,12 @@ contract CheckExpired is AutomationCompatibleInterface {
                 preCommitManager.withdrawCommit(commitId);
             }
         }
+    }
+
+    function setPreCommitManager(IPreCommitManager preCommitManager_)
+        external
+        onlyOwner
+    {
+        preCommitManager = preCommitManager_;
     }
 }

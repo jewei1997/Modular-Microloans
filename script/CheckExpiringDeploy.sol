@@ -3,13 +3,13 @@ pragma solidity 0.8.15;
 
 import "forge-std/Script.sol";
 
-import {CheckExpiration} from "src/CheckExpiration.sol";
+import {CheckExpiring} from "src/CheckExpiring.sol";
 import {PreCommitManager} from "src/PreCommitManager.sol";
 
-contract CheckExpirationDeploy is Script {
+contract CheckExpiringDeploy is Script {
     // global vars
     PreCommitManager preComManager;
-    CheckExpiration cEx;
+    CheckExpiring cEx;
 
     function run() external {
         uint256 admin = vm.envUint("ETH_KEYSTORE");

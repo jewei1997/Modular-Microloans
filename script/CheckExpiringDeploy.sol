@@ -15,10 +15,11 @@ contract CheckExpiringDeploy is Script {
         uint256 admin = vm.envUint("ETH_KEYSTORE");
         vm.startBroadcast(admin);
         preComManager = PreCommitManager(
+            // UPDATE ADDRESS
             0x80F7b90C88A80eE1e60e74Ce0c6207DfcA2E182C
         );
-        cEx = new CheckExpiration(preComManager);
-        console.log("CheckExpiration: ", address(cEx));
+        cEx = new CheckExpired(preComManager);
+        console.log("CheckExpired: ", address(cEx));
         vm.stopBroadcast();
     }
 }

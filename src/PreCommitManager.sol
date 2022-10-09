@@ -3,15 +3,19 @@ pragma solidity 0.8.15;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IPreCommitManager.sol";
 
-contract PreCommitManager is IPreCommitManager {
+contract PreCommitManager is IPreCommitManager, Ownable {
     using SafeERC20 for IERC20;
 
     // projectId => project creator
     mapping(uint256 => Project) public projects;
     // commitId => commit creator
     mapping(uint256 => Commit) public commits;
+
+    // automation address permitted to remove expired commits
+    address public authorizedRemover;
 
     uint256 public lastProjectId;
     uint256 public lastCommitId;
@@ -66,10 +70,6 @@ contract PreCommitManager is IPreCommitManager {
                 commit_.projectId == projectId,
                 "Commit does not belong to the project"
             );
-            require(
-                project.receiver == msg.sender,
-                "Commit does not belong to the project"
-            );
             require(commit_.expiry > block.timestamp, "Commit expired");
 
             bool success = IERC20(commit_.erc20Token).transferFrom(
@@ -77,6 +77,7 @@ contract PreCommitManager is IPreCommitManager {
                 project.receiver,
                 commit_.amount
             );
+
             if (success) {
                 delete commits[commitIds[i]];
                 emit RedeemSucceeded(
@@ -136,11 +137,19 @@ contract PreCommitManager is IPreCommitManager {
 
     function withdrawCommit(uint256 commitId) public {
         require(
-            commits[commitId].commiter == msg.sender,
-            "Only commiter can withdraw"
+            (commits[commitId].commiter == msg.sender ||
+                msg.sender == authorizedRemover),
+            "Only committer or automation can withdraw"
         );
         delete commits[commitId];
 
         emit CommitWithdrawn(commitId, msg.sender);
+    }
+
+    function updateAuthorizedRemover(address authorizedRemover_)
+        external
+        onlyOwner
+    {
+        authorizedRemover = authorizedRemover_;
     }
 }

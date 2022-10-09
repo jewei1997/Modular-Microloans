@@ -66,10 +66,6 @@ contract PreCommitManager is IPreCommitManager {
                 commit_.projectId == projectId,
                 "Commit does not belong to the project"
             );
-            require(
-                project.receiver == msg.sender,
-                "Commit does not belong to the project"
-            );
             require(commit_.expiry > block.timestamp, "Commit expired");
 
             bool success = IERC20(commit_.erc20Token).transferFrom(
@@ -77,6 +73,7 @@ contract PreCommitManager is IPreCommitManager {
                 project.receiver,
                 commit_.amount
             );
+
             if (success) {
                 delete commits[commitIds[i]];
                 emit RedeemSucceeded(

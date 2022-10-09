@@ -25,7 +25,7 @@ contract Deploy is Script {
         // usdc.approve(address(preComManager), initialAmount);
         vm.stopBroadcast();
 
-        // user 1 creates project 1
+        /* user 1 creates project 1
         uint256 user1PrivateKey = vm.envUint("ADDRESS_USER");
         vm.startBroadcast(user1PrivateKey);
         // create project with id 1
@@ -45,6 +45,7 @@ contract Deploy is Script {
             amount: user2AmountToCommit,
             deadline: block.timestamp + 1 weeks
         });
+        */
         vm.stopBroadcast();
     }
 }

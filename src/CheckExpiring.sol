@@ -14,8 +14,14 @@ contract CheckExpiring is Ownable {
 
     event CommitExpiringWarning(uint256 commitId);
 
-    constructor(IPreCommitManager preCommitManager_) {
+    constructor(
+        IPreCommitManager preCommitManager_,
+        uint256 minimumInterval_,
+        uint256 warningTime_
+    ) {
         preCommitManager = preCommitManager_;
+        minimumInterval = minimumInterval_;
+        warningTime = warningTime_;
     }
 
     function checkAtMinInterval() external {

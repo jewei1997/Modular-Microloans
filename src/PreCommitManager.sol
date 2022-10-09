@@ -4,14 +4,44 @@ pragma solidity 0.8.15;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./IPreCommitManager.sol";
+import {ByteHasher} from "./library/ByteHasher.sol";
+
+interface IWorldID {
+    /// @notice Reverts if the zero-knowledge proof is invalid.
+    /// @param root The of the Merkle tree
+    /// @param groupId The id of the Semaphore group
+    /// @param signalHash A keccak256 hash of the Semaphore signal
+    /// @param nullifierHash The nullifier hash
+    /// @param externalNullifierHash A keccak256 hash of the external nullifier
+    /// @param proof The zero-knowledge proof
+    /// @dev  Note that a double-signaling check is not included here, and should be carried by the caller.
+    function verifyProof(
+        uint256 root,
+        uint256 groupId,
+        uint256 signalHash,
+        uint256 nullifierHash,
+        uint256 externalNullifierHash,
+        uint256[8] calldata proof
+    ) external view;
+}
 
 contract PreCommitManager is IPreCommitManager {
     using SafeERC20 for IERC20;
+    using ByteHasher for bytes;
 
     // projectId => project creator
     mapping(uint256 => Project) public projects;
     // commitId => commit creator
     mapping(uint256 => Commit) public commits;
+    // whether a nullifier hash has been used already. Used to prevent double-signaling
+    mapping(uint256 => bool) internal nullifierHashes;
+
+    // The World ID group whose participants can claim this airdrop
+    uint256 internal immutable groupId;
+    // The World ID Action ID
+    uint256 internal immutable actionId;
+    // semaphore contract for worldId
+    IWorldID internal immutable worldId;
 
     uint256 public lastProjectId;
     uint256 public lastCommitId;
@@ -30,6 +60,16 @@ contract PreCommitManager is IPreCommitManager {
     );
     event CommitWithdrawn(uint256 commitId, address commiter);
 
+    constructor(
+        address _worldId,
+        uint256 _groupId,
+        string memory _actionId
+    ) {
+        worldId = IWorldID(_worldId);
+        groupId = _groupId;
+        actionId = abi.encodePacked(_actionId).hashToField();
+    }
+
     function getProject(uint256 projectId)
         public
         view
@@ -42,7 +82,25 @@ contract PreCommitManager is IPreCommitManager {
         return commits[commitId];
     }
 
-    function createProject(address projectAcceptedAsset) public {
+    function createProject(
+        address projectAcceptedAsset,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public {
+        // id check
+        require(!nullifierHashes[nullifierHash], "hash already used");
+        worldId.verifyProof(
+            root,
+            groupId,
+            abi.encodePacked(msg.sender).hashToField(), // The signal of the proof
+            nullifierHash,
+            actionId,
+            proof
+        );
+
+        nullifierHashes[nullifierHash] = true;
+
         require(projectAcceptedAsset != address(0), "Invalid asset address");
         lastProjectId++;
         projects[lastProjectId] = Project({
